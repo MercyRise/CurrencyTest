@@ -4,12 +4,15 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,6 +27,8 @@ import com.baronmukenyi.currency.ui.theme.Lovelo_Black
 import com.baronmukenyi.currency.ui.theme.Orange_700
 import com.baronmukenyi.currency.ui.theme.White_900
 import com.baronmukenyi.currency.utils.Constants.Companion.APP_BAR_TITLE
+import com.baronmukenyi.currency.utils.Constants.Companion.CURRENCY_CODES_LIST
+import kotlinx.coroutines.launch
 
 @ExperimentalMaterialApi
 @Composable
@@ -36,13 +41,35 @@ fun ConverterScreen(){
     val singleConvertedAmount = remember { mutableStateOf("") }
 
     val scaffoldState = rememberBottomSheetScaffoldState()
+    val scope = rememberCoroutineScope()
 
     val isDarkMode:Boolean = isSystemInDarkTheme()
 
-    val isFromSelected = true
+    var isFromSelected = true
 
     BottomSheetScaffold(
-        sheetContent = {},
+        sheetContent = {
+                       Box(modifier = Modifier.fillMaxWidth()
+                           .height(250.dp)) {
+                           LazyColumn(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
+                           ) {
+                             items(CURRENCY_CODES_LIST){ item ->
+                                 Text(
+                                     text = "${item.currencyCode}\t ${item.countryName}",
+                                     modifier = Modifier.padding(vertical = 10.dp)
+                                         .clickable {
+                                             if (isFromSelected){
+                                                 fromCurrencyCode.value = item.currencyCode
+                                             }else{
+                                                 toCurrencyCode.value = item.currencyCode
+                                             }
+                                             scope.launch { scaffoldState.bottomSheetState.collapse() }
+                                         }
+                                 )
+                             }
+                           }
+                       }
+        },
         topBar = {
             TopAppBar(title = {
                 Text(
@@ -72,8 +99,13 @@ fun ConverterScreen(){
                 .fillMaxSize()){
                 Text(text = "From", color = Label_Color)
                 Spacer(modifier = Modifier.padding(3.dp))
-                Box(modifier = Modifier.fillMaxWidth().height(50.dp).clickable {
-
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .clickable {
+                        isFromSelected = true
+                        scope.launch { scaffoldState.bottomSheetState.expand() }
+                //
                 }
                     .border(1.dp, Color.Gray, RoundedCornerShape(5.dp)),
 
@@ -86,8 +118,13 @@ fun ConverterScreen(){
 
             Text(text = "To", color = Label_Color)
             Spacer(modifier = Modifier.padding(3.dp))
-            Box(modifier = Modifier.fillMaxWidth().height(50.dp).clickable {
-
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .clickable {
+                    isFromSelected = false
+                    scope.launch { scaffoldState.bottomSheetState.expand() }
+            //
             }
                 .border(1.dp, Color.Gray, RoundedCornerShape(5.dp)),
 
