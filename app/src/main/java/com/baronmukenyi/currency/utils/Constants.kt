@@ -7,6 +7,8 @@ class Constants {
 
         const val APP_BAR_TITLE = "Currency\nConverter"
 
+        const val BASE_URL = "https://api.exchangeratesapi.io/"
+
         val CURRENCY_CODES_LIST = listOf(
             CurrencyAndCountry("Australia", "AUD"),
             CurrencyAndCountry("Brazil", "BRL"),
