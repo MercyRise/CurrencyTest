@@ -4,6 +4,9 @@ import com.baronmukenyi.currency.models.CurrencyAndCountry
 
 class Constants {
     companion object{
+
+        const val APP_BAR_TITLE = "Currency\nConverter"
+
         val CURRENCY_CODES_LIST = listOf(
             CurrencyAndCountry("Australia", "AUD"),
             CurrencyAndCountry("Brazil", "BRL"),

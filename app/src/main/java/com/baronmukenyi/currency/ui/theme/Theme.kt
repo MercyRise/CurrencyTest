@@ -35,11 +35,11 @@ private val LightColorPalette = lightColors(
 )
 
 val Lato = FontFamily(
-    //Font(R.font.lato_regular)
+    Font(R.font.lato_regular)
 )
 
 val Lovelo_Black = FontFamily(
-    //Font(R.font.lovelo_black)
+    Font(R.font.lovelo_black)
 )
 
 val lightThemeTypography = Typography(
