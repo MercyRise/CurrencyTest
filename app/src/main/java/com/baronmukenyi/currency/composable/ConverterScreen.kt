@@ -1,5 +1,6 @@
 package com.baronmukenyi.currency.composable
 
+import android.content.Context
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -22,17 +23,21 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LifecycleOwner
+import com.baronmukenyi.currency.models.Rates
 import com.baronmukenyi.currency.ui.theme.Label_Color
 import com.baronmukenyi.currency.ui.theme.Lovelo_Black
 import com.baronmukenyi.currency.ui.theme.Orange_700
 import com.baronmukenyi.currency.ui.theme.White_900
 import com.baronmukenyi.currency.utils.Constants.Companion.APP_BAR_TITLE
 import com.baronmukenyi.currency.utils.Constants.Companion.CURRENCY_CODES_LIST
+import com.baronmukenyi.currency.utils.NetworkResult
+import com.baronmukenyi.currency.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 
 @ExperimentalMaterialApi
 @Composable
-fun ConverterScreen(){
+fun ConverterScreen(context: Context, mainViewModel: MainViewModel){
 
     val fromCurrencyCode = remember { mutableStateOf("USD") }
     val toCurrencyCode = remember { mutableStateOf("INR") }
@@ -154,7 +159,30 @@ fun ConverterScreen(){
 
             Spacer(modifier = Modifier.padding(20.dp))
 
-            Button(onClick = {  },
+            Button(onClick = {
+                             mainViewModel.getExchangeRates(provideQueries(fromCurrencyCode.value))
+                mainViewModel.exchangeRateResponse.observe(context as LifecycleOwner, {
+                    response ->
+                    run {
+                        when (response) {
+                            is NetworkResult.Success ->
+                                response.data?.let {
+                                    if (amountValue.value.isEmpty()) {
+                                        amountValue.value = "1.00"
+                                    }
+
+                                    val toValue = getToValue(toCurrencyCode.value, it.rates)
+                                    val amount = amountValue.value.toDouble()
+                                    convertedAmount.value =
+                                        "${getOutputString(amount * toValue)} ${toCurrencyCode.value}"
+                                    singleConvertedAmount.value =
+                                        "1 ${fromCurrencyCode} = ${getOutputString(toValue)} ${toCurrencyCode.value}"
+                                }
+                        }
+
+                    }
+                })
+            },
             modifier = Modifier.fillMaxWidth()
                 .height(50.dp)
                 ){
@@ -179,4 +207,54 @@ fun ConverterScreen(){
         }
 
     }
+}
+
+fun getOutputString(value: Double): String {
+    return "%.2f".format(value)
+}
+
+fun getToValue(currencyCode: String, rates: Rates): Double {
+    return when(currencyCode){
+        "AUD" -> rates.aUD
+        "BRL" -> rates.bRL
+        "BGN" -> rates.bGN
+        "CAD" -> rates.cAD
+        "CYN" -> rates.cNY
+        //"HRK" -> rates.hRK
+        "CZK" -> rates.cZK
+        //"DKK" -> rates.
+        //"EUR" -> rates.
+        "GBP" -> rates.gBP
+        "HKD" -> rates.hKD
+        "HUF" -> rates.hUF
+        "ISK" -> rates.iSK
+        "INR" -> rates.iNR
+        "IDR" -> rates.iDR
+        "ILS" -> rates.iLS
+        //"JPY" -> rates.
+        "KRW" -> rates.kRW
+        "MYR" -> rates.mYR
+        //"MXN" -> rates.mXN
+        "NZD" -> rates.nZD
+        "NOK" -> rates.nOK
+        "PHP" -> rates.pHP
+        "PLN" -> rates.pLN
+        "RON" -> rates.rON
+        //"RUB" -> rates.
+        //"SGD" -> rates.
+        "ZAR" -> rates.zAR
+        "SEK" -> rates.sEK
+        //"CHF" -> rates.c
+        //"THB" -> rates.t
+        "TRY" -> rates.tRY
+        "USD" -> rates.uSD
+        else -> 0.00
+
+    }
+}
+
+fun provideQueries(from: String): Map<String, String> {
+    val queries = HashMap<String, String>()
+    queries["base"] = from
+    return queries
 }
